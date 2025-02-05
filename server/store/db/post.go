@@ -25,3 +25,19 @@ func (u *Post) GetDescription() string {
 func (u *Post) SetDescription(description *string) {
 	u.Set("description", description)
 }
+
+func (p *Post) GetCreatedBy() string {
+	return p.GetString("createdby")
+}
+
+func (p *Post) SetCreatedBy(id string) {
+	p.Set("createdby", id)
+}
+
+func (p *Post) GetUpdatedBy() string {
+	return p.GetString("updatedby")
+}
+
+func (p *Post) SetUpdatedBy(id string) {
+	p.Set("updatedby", id)
+}

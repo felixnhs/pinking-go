@@ -13,6 +13,7 @@ func main() {
 
 	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
 		api.BindUsersApi(e)
+		api.BindPostsApi(e)
 
 		return e.Next()
 	})
