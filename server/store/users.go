@@ -22,7 +22,7 @@ func (d *UserStore) TableName() string {
 	return "users"
 }
 
-func (d *UserStore) CreateNew(email, password string) (*db.User, error) {
+func (d *UserStore) CreateNew(email, password string) (*core.Record, error) {
 	app := (*d.app)
 
 	record, err := app.FindAuthRecordByEmail(d.TableName(), email)
@@ -45,7 +45,7 @@ func (d *UserStore) CreateNew(email, password string) (*db.User, error) {
 		return nil, err
 	}
 
-	return user, nil
+	return user.Record, nil
 }
 
 func (d *UserStore) ResetPassword(auth *core.Record, oldPassword, newPassword string) (*string, error) {

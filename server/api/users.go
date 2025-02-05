@@ -44,7 +44,7 @@ func (a *UserApi) registerNewUser(e *core.RequestEvent) error {
 		return apis.NewInternalServerError("error_register_user", err)
 	}
 
-	return apis.RecordAuthResponse(e, user.Record, "email", nil)
+	return apis.RecordAuthResponse(e, user, "email", nil)
 }
 
 func (a *UserApi) login(e *core.RequestEvent) error {
