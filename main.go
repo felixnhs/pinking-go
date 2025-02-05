@@ -11,11 +11,21 @@ import (
 func main() {
 	app := pocketbase.New()
 
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		api.BindUsersApi(&app.App, e.Router)
-		api.BindPostsApi(&app.App, e.Router)
+	// app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+	// 	// api.BindUsersApi(customApi, e.Router)
+	// 	// customApi.PostApi = api.BuildPostsApi(&app.App, e.Router)
 
-		return nil
+	// 	provider := lib.BuildProvider(&app.App)
+
+	// 	api.BindUsersApi(provider, e.Router)
+
+	// 	return nil
+	// })
+
+	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
+		api.BindUsersApi(e)
+
+		return e.Next()
 	})
 
 	if err := app.Start(); err != nil {
