@@ -2,8 +2,8 @@ package store
 
 import (
 	"errors"
-	"pinking-go/lib/api/model"
-	"pinking-go/lib/store/db"
+	"pinking-go/server/api/model"
+	"pinking-go/server/store/db"
 
 	"github.com/pocketbase/pocketbase/core"
 )
@@ -18,15 +18,19 @@ func BuildUserStore(se *core.ServeEvent) *UserStore {
 	}
 }
 
+func (d *UserStore) TableName() string {
+	return "users"
+}
+
 func (d *UserStore) CreateNew(email, password string) (*db.User, error) {
 	app := (*d.app)
 
-	record, err := app.FindAuthRecordByEmail("users", email)
+	record, err := app.FindAuthRecordByEmail(d.TableName(), email)
 	if record != nil || err == nil {
 		return nil, errors.New("email_already_exists")
 	}
 
-	userCollection, err := app.FindCollectionByNameOrId("users")
+	userCollection, err := app.FindCollectionByNameOrId(d.TableName())
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +48,7 @@ func (d *UserStore) CreateNew(email, password string) (*db.User, error) {
 	return user, nil
 }
 
-func (d *UserStore) UpdateUser(auth *core.Record, input *model.User) error {
+func (d *UserStore) UpdateUser(auth *core.Record, input *model.UserRequest) error {
 
 	app := (*d.app)
 
@@ -53,6 +57,7 @@ func (d *UserStore) UpdateUser(auth *core.Record, input *model.User) error {
 
 	user.SetFirstname(input.Firstname)
 	user.SetLastname(input.Lastname)
+	user.SetBio(input.Bio)
 
 	if err := app.Save(user); err != nil {
 		return err
