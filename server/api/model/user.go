@@ -5,6 +5,11 @@ type RegistrationLoginRequest struct {
 	Password string `json:"password" form:"password"`
 }
 
+type ResetPasswordRequest struct {
+	OldPassword string `json:"oldpassword" form:"oldpassword"`
+	NewPassword string `json:"newpassword" form:"newpassword"`
+}
+
 type UserRequest struct {
 	Firstname *string `json:"firstname" form:"firstname"`
 	Lastname  *string `json:"lastname" form:"lastname"`
