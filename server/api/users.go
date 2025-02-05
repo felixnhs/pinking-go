@@ -18,12 +18,15 @@ func BindUsersApi(se *core.ServeEvent) {
 		store: store.BuildUserStore(se),
 	}
 
+	// Anonym
 	se.Router.POST("/users/register", api.registerNewUser)
 	se.Router.POST("/users/login", api.login)
 
+	// Auth
 	grp := se.Router.Group("/users")
 	grp.Bind(apis.RequireAuth())
 	grp.POST("/logout", api.logout)
+	grp.POST("/resetpassword", api.resetPassword)
 	grp.GET("/me", api.getCurrentUser)
 	grp.PUT("", api.updateUser)
 }
@@ -73,6 +76,22 @@ func (a *UserApi) logout(e *core.RequestEvent) error {
 	}
 
 	return EmptyResponse(e)
+}
+
+func (a *UserApi) resetPassword(e *core.RequestEvent) error {
+
+	req := model.ResetPasswordRequest{}
+
+	if err := e.BindBody(&req); err != nil {
+		return apis.NewBadRequestError("error_request_body", err)
+	}
+
+	token, err := a.store.ResetPassword(e.Auth, req.OldPassword, req.NewPassword)
+	if err != nil {
+		return apis.NewForbiddenError("error_reset_password", err)
+	}
+
+	return TokenResponse(e, token)
 }
 
 func (a *UserApi) getCurrentUser(e *core.RequestEvent) error {

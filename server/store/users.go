@@ -48,6 +48,27 @@ func (d *UserStore) CreateNew(email, password string) (*db.User, error) {
 	return user, nil
 }
 
+func (d *UserStore) ResetPassword(auth *core.Record, oldPassword, newPassword string) (*string, error) {
+
+	if auth.ValidatePassword(oldPassword) == false {
+		return nil, errors.New("error_reset_password")
+	}
+
+	app := (*d.app)
+
+	auth.SetPassword(newPassword)
+	if err := app.Save(auth); err != nil {
+		return nil, errors.New("error_reset_password")
+	}
+
+	token, err := auth.NewAuthToken()
+	if err != nil {
+		return nil, errors.New("error_reset_password")
+	}
+
+	return &token, nil
+}
+
 func (d *UserStore) UpdateUser(auth *core.Record, input *model.UserRequest) error {
 
 	app := (*d.app)
