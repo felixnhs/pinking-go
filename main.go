@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"pinking-go/lib"
 	"pinking-go/lib/api"
 
 	"github.com/pocketbase/pocketbase"
@@ -12,16 +11,21 @@ import (
 func main() {
 	app := pocketbase.New()
 
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		// api.BindUsersApi(customApi, e.Router)
-		// customApi.PostApi = api.BuildPostsApi(&app.App, e.Router)
+	// app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+	// 	// api.BindUsersApi(customApi, e.Router)
+	// 	// customApi.PostApi = api.BuildPostsApi(&app.App, e.Router)
 
-		provider := lib.BuildProvider(&app.App)
+	// 	provider := lib.BuildProvider(&app.App)
 
-		api.BindUsersApi(provider, e.Router)
-		api.BindPostsApi(provider, e.Router)
+	// 	api.BindUsersApi(provider, e.Router)
 
-		return nil
+	// 	return nil
+	// })
+
+	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
+		api.BindUsersApi(e)
+
+		return e.Next()
 	})
 
 	if err := app.Start(); err != nil {
