@@ -25,3 +25,11 @@ func (u *User) GetLastname() string {
 func (u *User) SetLastname(lastname *string) {
 	u.Set("lastname", lastname)
 }
+
+func (u *User) GetBio() string {
+	return u.GetString("bio")
+}
+
+func (u *User) SetBio(bio *string) {
+	u.Set("bio", bio)
+}
