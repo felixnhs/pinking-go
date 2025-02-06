@@ -48,6 +48,20 @@ func (d *UserStore) CreateNew(email, password string) (*core.Record, error) {
 	return user.Record, nil
 }
 
+func (d *UserStore) FindByEmail(email string) (*db.User, error) {
+	app := (*d.app)
+
+	record, err := app.FindAuthRecordByEmail(d.TableName(), email)
+	if err != nil {
+		return nil, err
+	}
+
+	user := &db.User{}
+	user.SetProxyRecord(record)
+
+	return user, nil
+}
+
 func (d *UserStore) ResetPassword(auth *core.Record, oldPassword, newPassword string) (*string, error) {
 
 	if auth.ValidatePassword(oldPassword) == false {

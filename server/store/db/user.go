@@ -33,3 +33,11 @@ func (u *User) GetBio() string {
 func (u *User) SetBio(bio *string) {
 	u.Set("bio", bio)
 }
+
+func (u *User) GetLockoutEnabled() bool {
+	return u.GetBool("lockoutenabled")
+}
+
+func (u *User) SetLockoutEnabled(lockout bool) {
+	u.Set("lockoutenabled", lockout)
+}

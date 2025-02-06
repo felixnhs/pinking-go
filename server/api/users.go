@@ -55,7 +55,7 @@ func (a *UserApi) login(e *core.RequestEvent) error {
 		return apis.NewBadRequestError("error_request_body", err)
 	}
 
-	user, err := e.App.FindAuthRecordByEmail(a.store.TableName(), req.Email)
+	user, err := a.store.FindByEmail(req.Email)
 	if err != nil {
 		return apis.NewForbiddenError("error_user_login", nil)
 	}
@@ -64,7 +64,11 @@ func (a *UserApi) login(e *core.RequestEvent) error {
 		return apis.NewForbiddenError("error_user_login", nil)
 	}
 
-	return apis.RecordAuthResponse(e, user, "email", nil)
+	if user.GetLockoutEnabled() {
+		return apis.NewForbiddenError("error_user_lockout", nil)
+	}
+
+	return apis.RecordAuthResponse(e, user.Record, "email", nil)
 }
 
 func (a *UserApi) logout(e *core.RequestEvent) error {
