@@ -10,20 +10,20 @@ type Post struct {
 	core.BaseRecordProxy
 }
 
-func (u *Post) GetTitle() string {
-	return u.GetString("title")
-}
-
-func (u *Post) SetTitle(title *string) {
-	u.Set("title", title)
-}
-
 func (u *Post) GetDescription() string {
 	return u.GetString("description")
 }
 
 func (u *Post) SetDescription(description *string) {
 	u.Set("description", description)
+}
+
+func (u *Post) GetActive() bool {
+	return u.GetBool("active")
+}
+
+func (u *Post) SetActive(active bool) {
+	u.Set("active", active)
 }
 
 func (p *Post) GetCreatedBy() string {

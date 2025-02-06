@@ -33,14 +33,31 @@ func (d *PostStore) CreatePost(auth *core.Record, data *model.CreatePostRequest)
 	post := &db.Post{}
 	post.SetProxyRecord(core.NewRecord(postsCollection))
 
-	post.SetTitle(&data.Title)
 	post.SetDescription(&data.Description)
 	post.SetCreatedBy(auth.Id)
 	post.SetUpdatedBy(auth.Id)
+	post.SetActive(true)
 
 	if err = app.Save(post); err != nil {
 		return nil, err
 	}
 
 	return post.Record, nil
+}
+
+func (s *PostStore) GetPosts(take, skip int) ([]*core.Record, error) {
+
+	app := (*s.app)
+
+	records, err := app.FindRecordsByFilter(s.TableName(),
+		"active = TRUE",
+		"-created",
+		take,
+		skip)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return records, err
 }
