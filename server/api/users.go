@@ -24,7 +24,7 @@ func BindUsersApi(se *core.ServeEvent) {
 
 	// Auth
 	grp := se.Router.Group("/users")
-	grp.Bind(apis.RequireAuth())
+	grp.Bind(apis.RequireAuth(), RequireLockoutMiddleware())
 	grp.POST("/logout", api.logout)
 	grp.POST("/resetpassword", api.resetPassword)
 	grp.GET("/me", api.getCurrentUser)
