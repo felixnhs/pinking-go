@@ -10,34 +10,39 @@ type User struct {
 	core.BaseRecordProxy
 }
 
+const User_Firstname = "firstname"
+const User_Lastname = "lastname"
+const User_Bio = "bio"
+const User_LockoutEnabled = "bio"
+
 func (u *User) GetFirstname() string {
-	return u.GetString("firstname")
+	return u.GetString(User_Firstname)
 }
 
 func (u *User) SetFirstname(firstname *string) {
-	u.Set("firstname", firstname)
+	u.Set(User_Firstname, firstname)
 }
 
 func (u *User) GetLastname() string {
-	return u.GetString("lastname")
+	return u.GetString(User_Lastname)
 }
 
 func (u *User) SetLastname(lastname *string) {
-	u.Set("lastname", lastname)
+	u.Set(User_Lastname, lastname)
 }
 
 func (u *User) GetBio() string {
-	return u.GetString("bio")
+	return u.GetString(User_Bio)
 }
 
 func (u *User) SetBio(bio *string) {
-	u.Set("bio", bio)
+	u.Set(User_Bio, bio)
 }
 
 func (u *User) GetLockoutEnabled() bool {
-	return u.GetBool("lockoutenabled")
+	return u.GetBool(User_LockoutEnabled)
 }
 
 func (u *User) SetLockoutEnabled(lockout bool) {
-	u.Set("lockoutenabled", lockout)
+	u.Set(User_LockoutEnabled, lockout)
 }

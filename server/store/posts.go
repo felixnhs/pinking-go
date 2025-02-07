@@ -58,17 +58,17 @@ func (s *PostStore) GetPosts(take, skip int) ([]*core.Record, error) {
 	app := (*s.app)
 
 	records, err := app.FindRecordsByFilter(s.TableName(),
-		"active = {:active}",
-		"-created",
+		db.Post_Active+" = {:active}",
+		"-"+db.Post_Created,
 		take,
 		skip,
-		dbx.Params{"active": true})
+		dbx.Params{db.Post_Active: true})
 
 	if err != nil {
 		return nil, err
 	}
 
-	errs := app.ExpandRecords(records, []string{s.imageStore.TableName()}, s.imageStore.GetImagesForPosts)
+	errs := app.ExpandRecords(records, []string{db.Post_Images}, s.imageStore.GetImagesForPosts)
 	if len(errs) > 0 {
 		fmt.Printf("ERRS %+v\n", errs)
 	}

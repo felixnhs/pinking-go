@@ -10,34 +10,42 @@ type Post struct {
 	core.BaseRecordProxy
 }
 
+const Post_Description = "description"
+const Post_Active = "active"
+const Post_CreatedBy = "createdby"
+const Post_Created = "created"
+const Post_UpdatedBy = "updatedby"
+const Post_Updated = "updated"
+const Post_Images = "images"
+
 func (u *Post) GetDescription() string {
-	return u.GetString("description")
+	return u.GetString(Post_Description)
 }
 
 func (u *Post) SetDescription(description *string) {
-	u.Set("description", description)
+	u.Set(Post_Description, description)
 }
 
 func (u *Post) GetActive() bool {
-	return u.GetBool("active")
+	return u.GetBool(Post_Active)
 }
 
 func (u *Post) SetActive(active bool) {
-	u.Set("active", active)
+	u.Set(Post_Active, active)
 }
 
 func (p *Post) GetCreatedBy() string {
-	return p.GetString("createdby")
+	return p.GetString(Post_CreatedBy)
 }
 
 func (p *Post) SetCreatedBy(id string) {
-	p.Set("createdby", id)
+	p.Set(Post_CreatedBy, id)
 }
 
 func (p *Post) GetUpdatedBy() string {
-	return p.GetString("updatedby")
+	return p.GetString(Post_UpdatedBy)
 }
 
 func (p *Post) SetUpdatedBy(id string) {
-	p.Set("updatedby", id)
+	p.Set(Post_UpdatedBy, id)
 }

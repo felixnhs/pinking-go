@@ -31,8 +31,8 @@ func (s *ImageStore) GetImagesForPosts(relCollection *core.Collection, relIds []
 
 	var records []*core.Record
 	records, err := app.FindRecordsByIds(s.TableName(), relIds, func(q *dbx.SelectQuery) error {
-		q.AndWhere(dbx.NewExp("active = {:active}", dbx.Params{"active": true}))
-		q.OrderBy("order ASC")
+		q.AndWhere(dbx.NewExp(db.Image_Active+" = {:active}", dbx.Params{db.Image_Active: true}))
+		q.OrderBy(db.Image_Order + " ASC")
 		return nil
 	})
 
