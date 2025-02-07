@@ -10,38 +10,46 @@ type Image struct {
 	core.BaseRecordProxy
 }
 
+const Image_Raw = "raw"
+const Image_Active = "active"
+const Image_CreatedBy = "createdby"
+const Image_Created = "created"
+const Image_UpdatedBy = "updatedby"
+const Image_Updated = "updated"
+const Image_Order = "order"
+
 func (u *Image) GetRawFileName() string {
-	return u.GetString("raw")
+	return u.GetString(Image_Raw)
 }
 
 func (u *Image) GetOrder() int {
-	return u.GetInt("order")
+	return u.GetInt(Image_Order)
 }
 
 func (u *Image) SetOrder(order int) {
-	u.Set("order", order)
+	u.Set(Image_Order, order)
 }
 
 func (u *Image) GetActive() bool {
-	return u.GetBool("active")
+	return u.GetBool(Image_Active)
 }
 
 func (u *Image) SetActive(active bool) {
-	u.Set("active", active)
+	u.Set(Image_Active, active)
 }
 
 func (p *Image) GetCreatedBy() string {
-	return p.GetString("createdby")
+	return p.GetString(Image_CreatedBy)
 }
 
 func (p *Image) SetCreatedBy(id string) {
-	p.Set("createdby", id)
+	p.Set(Image_CreatedBy, id)
 }
 
 func (p *Image) GetUpdatedBy() string {
-	return p.GetString("updatedby")
+	return p.GetString(Image_UpdatedBy)
 }
 
 func (p *Image) SetUpdatedBy(id string) {
-	p.Set("updatedby", id)
+	p.Set(Image_UpdatedBy, id)
 }
