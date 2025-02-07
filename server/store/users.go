@@ -40,6 +40,7 @@ func (d *UserStore) CreateNew(email, password string) (*core.Record, error) {
 
 	user.SetEmail(email)
 	user.SetPassword(password)
+	user.SetLockoutEnabled(false)
 
 	if err = app.Save(user); err != nil {
 		return nil, err
@@ -99,4 +100,11 @@ func (d *UserStore) UpdateUser(auth *core.Record, input *model.UserRequest) erro
 	}
 
 	return nil
+}
+
+func IsLockoutEnabled(auth *core.Record) bool {
+	user := &db.User{}
+	user.SetProxyRecord(auth)
+
+	return user.GetLockoutEnabled()
 }

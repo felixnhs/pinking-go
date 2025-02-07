@@ -21,7 +21,7 @@ func BindPostsApi(se *core.ServeEvent) {
 
 	// Auth
 	grp := se.Router.Group("/posts")
-	grp.Bind(apis.RequireAuth())
+	grp.Bind(apis.RequireAuth(), RequireLockoutMiddleware())
 	grp.POST("/new", api.createNewPost)
 	grp.GET("", api.getPaginated)
 }
