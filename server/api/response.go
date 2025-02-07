@@ -14,15 +14,14 @@ func RecordResponse(e *core.RequestEvent, r *core.Record, includeCustom ...bool)
 }
 
 func MultipleRecordResponse(e *core.RequestEvent, r []*core.Record, includeCustom ...bool) error {
-
 	inc := getIncludeCustomData(includeCustom...)
 
-	items := []map[string]any{}
-	for i := 0; i < len(r); i++ {
-		items = append(items, r[i].WithCustomData(inc).PublicExport())
+	res := []map[string]any{}
+	for _, rec := range r {
+		res = append(res, rec.WithCustomData(inc).PublicExport())
 	}
 
-	return e.JSON(http.StatusOK, items)
+	return e.JSON(http.StatusOK, res)
 }
 
 func EmptyResponse(e *core.RequestEvent) error {

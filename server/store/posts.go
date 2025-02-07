@@ -1,19 +1,25 @@
 package store
 
 import (
+	"fmt"
 	"pinking-go/server/api/model"
 	"pinking-go/server/store/db"
 
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
 
 type PostStore struct {
-	app *core.App
+	app        *core.App
+	imageStore *ImageStore
 }
 
 func BuildPostStore(se *core.ServeEvent) *PostStore {
 	return &PostStore{
 		app: &se.App,
+		imageStore: &ImageStore{
+			app: &se.App,
+		},
 	}
 }
 
@@ -50,14 +56,20 @@ func (s *PostStore) GetPosts(take, skip int) ([]*core.Record, error) {
 	app := (*s.app)
 
 	records, err := app.FindRecordsByFilter(s.TableName(),
-		"active = TRUE",
+		"active = {:active}",
 		"-created",
 		take,
-		skip)
+		skip,
+		dbx.Params{"active": true})
 
 	if err != nil {
 		return nil, err
 	}
 
-	return records, err
+	errs := app.ExpandRecords(records, []string{s.imageStore.TableName()}, s.imageStore.GetImagesForPosts)
+	if len(errs) > 0 {
+		fmt.Printf("ERRS %+v\n", errs)
+	}
+
+	return records, nil
 }
