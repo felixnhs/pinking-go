@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"pinking-go/server/api/model"
 	"pinking-go/server/store"
 	"strconv"
@@ -58,11 +57,7 @@ func (a *PostApi) getPaginated(e *core.RequestEvent) error {
 		return e.InternalServerError("error_retrieve_posts", err)
 	}
 
-	extended := getQueryBool(info, "extended", true)
-
-	fmt.Printf("%v %v %v\n%v\n", take, skip, extended, posts)
-
-	return MultipleRecordResponse(e, posts, extended)
+	return MultipleRecordResponse(e, posts)
 }
 
 func getQueryInt64(info *core.RequestInfo, name string, def int) int {
