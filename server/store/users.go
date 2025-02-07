@@ -102,6 +102,23 @@ func (d *UserStore) UpdateUser(auth *core.Record, input *model.UserRequest) erro
 	return nil
 }
 
+func (s *UserStore) GetPosters(relCollection *core.Collection, relIds []string) ([]*core.Record, error) {
+	app := (*s.app)
+
+	var records []*core.Record
+	records, err := app.FindRecordsByIds(s.TableName(), relIds)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, r := range records {
+		r = r.Hide(db.User_Bio)
+	}
+
+	return records, nil
+}
+
 func IsLockoutEnabled(auth *core.Record) bool {
 	user := &db.User{}
 	user.SetProxyRecord(auth)
