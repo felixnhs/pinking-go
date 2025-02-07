@@ -12,8 +12,8 @@ func main() {
 	app := pocketbase.New()
 
 	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
-		api.BindUsersApi(e)
-		api.BindPostsApi(e)
+		userApi := api.BindUsersApi(e)
+		_ = api.BindPostsApi(e, userApi)
 
 		return e.Next()
 	})

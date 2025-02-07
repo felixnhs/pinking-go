@@ -12,7 +12,7 @@ type UserApi struct {
 	store *store.UserStore
 }
 
-func BindUsersApi(se *core.ServeEvent) {
+func BindUsersApi(se *core.ServeEvent) *UserApi {
 
 	api := &UserApi{
 		store: store.BuildUserStore(se),
@@ -29,6 +29,8 @@ func BindUsersApi(se *core.ServeEvent) {
 	grp.POST("/resetpassword", api.resetPassword)
 	grp.GET("/me", api.getCurrentUser)
 	grp.PUT("", api.updateUser)
+
+	return api
 }
 
 func (a *UserApi) registerNewUser(e *core.RequestEvent) error {
