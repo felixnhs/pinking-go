@@ -1,6 +1,7 @@
 package store
 
 import (
+	"errors"
 	"fmt"
 	"pinking-go/server/api/model"
 	"pinking-go/server/store/db"
@@ -68,10 +69,24 @@ func (s *PostStore) GetPosts(take, skip int) ([]*core.Record, error) {
 		return nil, err
 	}
 
-	errs := app.ExpandRecords(records, []string{db.Post_Images}, s.imageStore.GetImagesForPosts)
+	errs := app.ExpandRecords(records, []string{db.Post_Images, db.Post_CreatedBy}, s.expandPosts)
 	if len(errs) > 0 {
 		fmt.Printf("ERRS %+v\n", errs)
 	}
 
 	return records, nil
+}
+
+func (s *PostStore) expandPosts(relCollection *core.Collection, relIds []string) ([]*core.Record, error) {
+
+	var expandFn func(c *core.Collection, ids []string) ([]*core.Record, error) = nil
+	if relCollection.Name == s.imageStore.TableName() {
+		expandFn = s.imageStore.GetImagesForPosts
+	} else if relCollection.Name == s.userStore.TableName() {
+		expandFn = s.userStore.GetPosters
+	} else {
+		return nil, errors.New("error_expand_function")
+	}
+
+	return expandFn(relCollection, relIds)
 }
