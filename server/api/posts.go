@@ -13,10 +13,10 @@ type PostApi struct {
 	store *store.PostStore
 }
 
-func BindPostsApi(se *core.ServeEvent) {
+func BindPostsApi(se *core.ServeEvent, userApi *UserApi) *PostApi {
 
 	api := &PostApi{
-		store: store.BuildPostStore(se),
+		store: store.BuildPostStore(se, userApi.store),
 	}
 
 	// Auth
@@ -24,6 +24,8 @@ func BindPostsApi(se *core.ServeEvent) {
 	grp.Bind(apis.RequireAuth(), RequireLockoutMiddleware())
 	grp.POST("/new", api.createNewPost)
 	grp.GET("", api.getPaginated)
+
+	return api
 }
 
 func (a *PostApi) createNewPost(e *core.RequestEvent) error {
