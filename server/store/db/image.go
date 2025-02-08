@@ -2,6 +2,7 @@ package db
 
 import (
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/filesystem"
 )
 
 var _ core.RecordProxy = (*Image)(nil)
@@ -52,4 +53,8 @@ func (p *Image) GetUpdatedBy() string {
 
 func (p *Image) SetUpdatedBy(id string) {
 	p.Set(Image_UpdatedBy, id)
+}
+
+func (p *Image) SetImageRaw(f *filesystem.File) {
+	p.Set(Image_Raw, f)
 }

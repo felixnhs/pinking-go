@@ -49,3 +49,11 @@ func (p *Post) GetUpdatedBy() string {
 func (p *Post) SetUpdatedBy(id string) {
 	p.Set(Post_UpdatedBy, id)
 }
+
+func (p *Post) GetImages() []string {
+	return p.Get(Post_Images).([]string)
+}
+
+func (p *Post) SetImages(ids *[]string) {
+	p.Set(Post_Images, *ids)
+}

@@ -47,6 +47,18 @@ func (d *PostStore) CreatePost(auth *core.Record, data *model.CreatePostRequest)
 	post.SetUpdatedBy(auth.Id)
 	post.SetActive(true)
 
+	imageIds := []string{}
+	for _, image := range data.Images {
+		img, err := d.imageStore.CreateImage(auth, &image.Base64, image.Order)
+		if err != nil {
+			return nil, err
+		} else {
+			imageIds = append(imageIds, img.Id)
+		}
+	}
+
+	post.SetImages(&imageIds)
+
 	if err = app.Save(post); err != nil {
 		return nil, err
 	}
@@ -63,7 +75,7 @@ func (s *PostStore) GetPosts(take, skip int) ([]*core.Record, error) {
 		"-"+db.Post_Created,
 		take,
 		skip,
-		dbx.Params{db.Post_Active: true})
+		dbx.Params{"active": true})
 
 	if err != nil {
 		return nil, err
