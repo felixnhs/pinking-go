@@ -30,6 +30,8 @@ func BindUsersApi(se *core.ServeEvent) *UserApi {
 	grp.GET("/me", api.getCurrentUser)
 	grp.GET("/{id}", api.getProfile)
 	grp.PUT("", api.updateUser)
+	grp.PUT("/me/avatar", api.updateAvatar)
+	grp.DELETE("/me/avatar", api.deleteAvatar)
 
 	return api
 }
@@ -131,6 +133,29 @@ func (a *UserApi) updateUser(e *core.RequestEvent) error {
 
 	if err := a.store.UpdateUser(e.Auth, &body); err != nil {
 		return apis.NewInternalServerError("error_updating_user", err)
+	}
+
+	return RecordResponse(e, e.Auth)
+}
+
+func (a *UserApi) updateAvatar(e *core.RequestEvent) error {
+
+	body := model.AvatarRequest{}
+
+	if err := e.BindBody(&body); err != nil {
+		return apis.NewBadRequestError("error_request_body", err)
+	}
+
+	if err := a.store.UpdateAvatar(e.Auth, body.Base64); err != nil {
+		return apis.NewBadRequestError("error_update_avatar", err)
+	}
+
+	return RecordResponse(e, e.Auth)
+}
+
+func (a *UserApi) deleteAvatar(e *core.RequestEvent) error {
+	if err := a.store.ClearAvatar(e.Auth); err != nil {
+		return apis.NewBadRequestError("error_clear_avatar", err)
 	}
 
 	return RecordResponse(e, e.Auth)

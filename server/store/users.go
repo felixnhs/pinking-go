@@ -126,6 +126,39 @@ func (d *UserStore) UpdateUser(auth *core.Record, input *model.UserRequest) erro
 	return nil
 }
 
+func (s *UserStore) UpdateAvatar(auth *core.Record, base64Str *string) error {
+	app := (*s.app)
+
+	user := &db.User{}
+	user.SetProxyRecord(auth)
+
+	f, err := utils.NewFile(base64Str)
+	if err != nil {
+		return err
+	}
+
+	user.SetAvatar(f)
+	if err := app.Save(user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserStore) ClearAvatar(auth *core.Record) error {
+	app := (*s.app)
+
+	user := &db.User{}
+	user.SetProxyRecord(auth)
+
+	user.ClearAvatar()
+	if err := app.Save(user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *UserStore) GetPosters(relCollection *core.Collection, relIds []string) ([]*core.Record, error) {
 	app := (*s.app)
 

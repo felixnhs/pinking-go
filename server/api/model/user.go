@@ -15,3 +15,7 @@ type UserRequest struct {
 	Lastname  *string `json:"lastname" form:"lastname"`
 	Bio       *string `json:"bio" form:"bio"`
 }
+
+type AvatarRequest struct {
+	Base64 *string `json:"base64"`
+}
