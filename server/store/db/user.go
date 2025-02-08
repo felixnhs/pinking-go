@@ -49,6 +49,10 @@ func (u *User) SetLockoutEnabled(lockout bool) {
 	u.Set(User_LockoutEnabled, lockout)
 }
 
-func (p *Image) SetAvatar(f *filesystem.File) {
+func (p *User) SetAvatar(f *filesystem.File) {
 	p.Set(User_Avatar, f)
+}
+
+func (p *User) ClearAvatar() {
+	p.Set(User_Avatar, nil)
 }
