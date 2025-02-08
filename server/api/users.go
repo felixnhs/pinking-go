@@ -102,7 +102,12 @@ func (a *UserApi) resetPassword(e *core.RequestEvent) error {
 }
 
 func (a *UserApi) getCurrentUser(e *core.RequestEvent) error {
-	return RecordResponse(e, e.Auth)
+	user, err := a.store.GetById(e.Auth.Id)
+	if err != nil {
+		return apis.NewInternalServerError("error_get_current_auth", err)
+	}
+
+	return RecordResponse(e, user.Record)
 }
 
 func (a *UserApi) getProfile(e *core.RequestEvent) error {

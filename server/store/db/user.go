@@ -2,6 +2,7 @@ package db
 
 import (
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/filesystem"
 )
 
 var _ core.RecordProxy = (*User)(nil)
@@ -14,6 +15,7 @@ const User_Firstname = "firstname"
 const User_Lastname = "lastname"
 const User_Bio = "bio"
 const User_LockoutEnabled = "bio"
+const User_Avatar = "avatar"
 
 func (u *User) GetFirstname() string {
 	return u.GetString(User_Firstname)
@@ -45,4 +47,8 @@ func (u *User) GetLockoutEnabled() bool {
 
 func (u *User) SetLockoutEnabled(lockout bool) {
 	u.Set(User_LockoutEnabled, lockout)
+}
+
+func (p *Image) SetAvatar(f *filesystem.File) {
+	p.Set(User_Avatar, f)
 }
