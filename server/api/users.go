@@ -3,6 +3,7 @@ package api
 import (
 	"pinking-go/server/api/model"
 	"pinking-go/server/store"
+	"pinking-go/server/utils"
 
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -84,7 +85,7 @@ func (a *UserApi) logout(e *core.RequestEvent) error {
 		return apis.NewInternalServerError("error_db_action", err)
 	}
 
-	return EmptyResponse(e)
+	return utils.EmptyResponse(e)
 }
 
 func (a *UserApi) resetPassword(e *core.RequestEvent) error {
@@ -100,7 +101,7 @@ func (a *UserApi) resetPassword(e *core.RequestEvent) error {
 		return apis.NewForbiddenError("error_reset_password", err)
 	}
 
-	return TokenResponse(e, token)
+	return utils.TokenResponse(e, token)
 }
 
 func (a *UserApi) getCurrentUser(e *core.RequestEvent) error {
@@ -109,7 +110,7 @@ func (a *UserApi) getCurrentUser(e *core.RequestEvent) error {
 		return apis.NewInternalServerError("error_get_current_auth", err)
 	}
 
-	return RecordResponse(e, user.Record)
+	return utils.RecordResponse(e, user.Record)
 }
 
 func (a *UserApi) getProfile(e *core.RequestEvent) error {
@@ -120,7 +121,7 @@ func (a *UserApi) getProfile(e *core.RequestEvent) error {
 		return apis.NewInternalServerError("error_get_profile", err)
 	}
 
-	return RecordResponse(e, user.Record)
+	return utils.RecordResponse(e, user.Record)
 }
 
 func (a *UserApi) updateUser(e *core.RequestEvent) error {
@@ -135,7 +136,7 @@ func (a *UserApi) updateUser(e *core.RequestEvent) error {
 		return apis.NewInternalServerError("error_updating_user", err)
 	}
 
-	return RecordResponse(e, e.Auth)
+	return utils.RecordResponse(e, e.Auth)
 }
 
 func (a *UserApi) updateAvatar(e *core.RequestEvent) error {
@@ -150,7 +151,7 @@ func (a *UserApi) updateAvatar(e *core.RequestEvent) error {
 		return apis.NewBadRequestError("error_update_avatar", err)
 	}
 
-	return RecordResponse(e, e.Auth)
+	return utils.RecordResponse(e, e.Auth)
 }
 
 func (a *UserApi) deleteAvatar(e *core.RequestEvent) error {
@@ -158,5 +159,5 @@ func (a *UserApi) deleteAvatar(e *core.RequestEvent) error {
 		return apis.NewBadRequestError("error_clear_avatar", err)
 	}
 
-	return RecordResponse(e, e.Auth)
+	return utils.RecordResponse(e, e.Auth)
 }
