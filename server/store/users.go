@@ -4,6 +4,7 @@ import (
 	"errors"
 	"pinking-go/server/api/model"
 	"pinking-go/server/store/db"
+	"pinking-go/server/utils"
 
 	"github.com/pocketbase/pocketbase/core"
 )
@@ -73,6 +74,15 @@ func (d *UserStore) GetById(id string) (*db.User, error) {
 
 	user := &db.User{}
 	user.SetProxyRecord(record)
+
+	if user.GetString(db.User_Avatar) != "" {
+		base64Str, err := utils.GetImageBase64(d.app, user.Record, db.User_Avatar)
+		if err != nil {
+			return nil, err
+		}
+		user.Set(db.User_Avatar, base64Str)
+		user.Record = user.WithCustomData(true)
+	}
 
 	return user, nil
 }
