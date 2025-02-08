@@ -28,6 +28,7 @@ func BindUsersApi(se *core.ServeEvent) *UserApi {
 	grp.POST("/logout", api.logout)
 	grp.POST("/resetpassword", api.resetPassword)
 	grp.GET("/me", api.getCurrentUser)
+	grp.GET("/{id}", api.getProfile)
 	grp.PUT("", api.updateUser)
 
 	return api
@@ -102,6 +103,17 @@ func (a *UserApi) resetPassword(e *core.RequestEvent) error {
 
 func (a *UserApi) getCurrentUser(e *core.RequestEvent) error {
 	return RecordResponse(e, e.Auth)
+}
+
+func (a *UserApi) getProfile(e *core.RequestEvent) error {
+	id := e.Request.PathValue("id")
+
+	user, err := a.store.GetById(id)
+	if err != nil {
+		return apis.NewInternalServerError("error_get_profile", err)
+	}
+
+	return RecordResponse(e, user.Record)
 }
 
 func (a *UserApi) updateUser(e *core.RequestEvent) error {
