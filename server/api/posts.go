@@ -3,6 +3,7 @@ package api
 import (
 	"pinking-go/server/api/model"
 	"pinking-go/server/store"
+	"pinking-go/server/utils"
 	"strconv"
 
 	"github.com/pocketbase/pocketbase/apis"
@@ -41,7 +42,7 @@ func (a *PostApi) createNewPost(e *core.RequestEvent) error {
 		return apis.NewInternalServerError("error_create_post", err)
 	}
 
-	return RecordResponse(e, post)
+	return utils.RecordResponse(e, post)
 }
 
 func (a *PostApi) getPaginated(e *core.RequestEvent) error {
@@ -59,7 +60,7 @@ func (a *PostApi) getPaginated(e *core.RequestEvent) error {
 		return e.InternalServerError("error_retrieve_posts", err)
 	}
 
-	return MultipleRecordResponse(e, posts)
+	return utils.MultipleRecordResponse(e, posts)
 }
 
 func getQueryInt64(info *core.RequestInfo, name string, def int) int {
