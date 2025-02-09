@@ -170,7 +170,19 @@ func (s *UserStore) GetPosters(relCollection *core.Collection, relIds []string) 
 	}
 
 	for _, r := range records {
-		r = r.Hide(db.User_Bio)
+		user := &db.User{}
+		user.SetProxyRecord(r)
+
+		if user.GetAvatar() != "" {
+			base64Str, err := utils.GetImageBase64(s.app, user.Record, db.User_Avatar)
+			if err != nil {
+				return nil, err
+			}
+			user.SetAvatarBase64(base64Str)
+		}
+
+		r = user.WithCustomData(true).
+			Hide(db.User_Bio)
 	}
 
 	return records, nil
