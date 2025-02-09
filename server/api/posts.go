@@ -25,6 +25,7 @@ func BindPostsApi(se *core.ServeEvent, userApi *UserApi) *PostApi {
 	grp.Bind(apis.RequireAuth(), RequireLockoutMiddleware())
 	grp.POST("/new", api.createNewPost)
 	grp.GET("", api.getPaginated)
+	grp.GET("/users/{id}", api.getUsersPostsPaginated)
 
 	return api
 }
@@ -56,6 +57,25 @@ func (a *PostApi) getPaginated(e *core.RequestEvent) error {
 	skip := getQueryInt64(info, "skip", 0)
 
 	posts, err := a.store.GetPosts(take, skip)
+	if err != nil {
+		return e.InternalServerError("error_retrieve_posts", err)
+	}
+
+	return utils.MultipleRecordResponse(e, posts)
+}
+
+func (a *PostApi) getUsersPostsPaginated(e *core.RequestEvent) error {
+	id := e.Request.PathValue("id")
+
+	info, err := e.RequestInfo()
+	if err != nil {
+		return e.InternalServerError("error_request_info", err)
+	}
+
+	take := getQueryInt64(info, "take", 10)
+	skip := getQueryInt64(info, "skip", 0)
+
+	posts, err := a.store.GetPostsForUser(id, take, skip)
 	if err != nil {
 		return e.InternalServerError("error_retrieve_posts", err)
 	}
