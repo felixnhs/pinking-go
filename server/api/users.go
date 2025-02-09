@@ -10,13 +10,17 @@ import (
 )
 
 type UserApi struct {
-	store *store.UserStore
+	stores *store.StoreCollection
 }
 
-func BindUsersApi(se *core.ServeEvent) *UserApi {
+func (a *UserApi) Store() *store.UserStore {
+	return a.stores.Users
+}
+
+func BindUsersApi(se *core.ServeEvent, stores *store.StoreCollection) {
 
 	api := &UserApi{
-		store: store.BuildUserStore(se),
+		stores: stores,
 	}
 
 	// Anonym
@@ -33,8 +37,6 @@ func BindUsersApi(se *core.ServeEvent) *UserApi {
 	grp.PUT("", api.updateUser)
 	grp.PUT("/me/avatar", api.updateAvatar)
 	grp.DELETE("/me/avatar", api.deleteAvatar)
-
-	return api
 }
 
 func (a *UserApi) registerNewUser(e *core.RequestEvent) error {
@@ -45,7 +47,7 @@ func (a *UserApi) registerNewUser(e *core.RequestEvent) error {
 		return apis.NewBadRequestError("error_request_body", err)
 	}
 
-	user, err := a.store.CreateNew(req.Email, req.Password)
+	user, err := a.Store().CreateNew(req.Email, req.Password)
 	if err != nil {
 		return apis.NewInternalServerError("error_register_user", err)
 	}
@@ -61,7 +63,7 @@ func (a *UserApi) login(e *core.RequestEvent) error {
 		return apis.NewBadRequestError("error_request_body", err)
 	}
 
-	user, err := a.store.FindByEmail(req.Email)
+	user, err := a.Store().FindByEmail(req.Email)
 	if err != nil {
 		return apis.NewForbiddenError("error_user_login", nil)
 	}
@@ -96,7 +98,7 @@ func (a *UserApi) resetPassword(e *core.RequestEvent) error {
 		return apis.NewBadRequestError("error_request_body", err)
 	}
 
-	token, err := a.store.ResetPassword(e.Auth, req.OldPassword, req.NewPassword)
+	token, err := a.Store().ResetPassword(e.Auth, req.OldPassword, req.NewPassword)
 	if err != nil {
 		return apis.NewForbiddenError("error_reset_password", err)
 	}
@@ -105,7 +107,7 @@ func (a *UserApi) resetPassword(e *core.RequestEvent) error {
 }
 
 func (a *UserApi) getCurrentUser(e *core.RequestEvent) error {
-	user, err := a.store.GetById(e.Auth.Id)
+	user, err := a.Store().GetById(e.Auth.Id)
 	if err != nil {
 		return apis.NewInternalServerError("error_get_current_auth", err)
 	}
@@ -116,7 +118,7 @@ func (a *UserApi) getCurrentUser(e *core.RequestEvent) error {
 func (a *UserApi) getProfile(e *core.RequestEvent) error {
 	id := e.Request.PathValue("id")
 
-	user, err := a.store.GetById(id)
+	user, err := a.Store().GetById(id)
 	if err != nil {
 		return apis.NewInternalServerError("error_get_profile", err)
 	}
@@ -132,7 +134,7 @@ func (a *UserApi) updateUser(e *core.RequestEvent) error {
 		return apis.NewBadRequestError("error_request_body", err)
 	}
 
-	if err := a.store.UpdateUser(e.Auth, &body); err != nil {
+	if err := a.Store().UpdateUser(e.Auth, &body); err != nil {
 		return apis.NewInternalServerError("error_updating_user", err)
 	}
 
@@ -147,7 +149,7 @@ func (a *UserApi) updateAvatar(e *core.RequestEvent) error {
 		return apis.NewBadRequestError("error_request_body", err)
 	}
 
-	if err := a.store.UpdateAvatar(e.Auth, body.Base64); err != nil {
+	if err := a.Store().UpdateAvatar(e.Auth, body.Base64); err != nil {
 		return apis.NewBadRequestError("error_update_avatar", err)
 	}
 
@@ -155,7 +157,7 @@ func (a *UserApi) updateAvatar(e *core.RequestEvent) error {
 }
 
 func (a *UserApi) deleteAvatar(e *core.RequestEvent) error {
-	if err := a.store.ClearAvatar(e.Auth); err != nil {
+	if err := a.Store().ClearAvatar(e.Auth); err != nil {
 		return apis.NewBadRequestError("error_clear_avatar", err)
 	}
 

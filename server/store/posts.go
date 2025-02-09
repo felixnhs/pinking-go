@@ -5,24 +5,25 @@ import (
 	"fmt"
 	"pinking-go/server/api/model"
 	"pinking-go/server/store/db"
+	"slices"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
 
 type PostStore struct {
-	app        *core.App
-	imageStore *ImageStore
-	userStore  *UserStore
+	app              *core.App
+	imageStore       *ImageStore
+	userStore        *UserStore
+	interactionStore *InteractionsStore
 }
 
-func BuildPostStore(se *core.ServeEvent, userStore *UserStore) *PostStore {
+func BuildPostStore(se *core.ServeEvent, userStore *UserStore, inteStore *InteractionsStore, img *ImageStore) *PostStore {
 	return &PostStore{
-		app: &se.App,
-		imageStore: &ImageStore{
-			app: &se.App,
-		},
-		userStore: userStore,
+		app:              &se.App,
+		imageStore:       img,
+		userStore:        userStore,
+		interactionStore: inteStore,
 	}
 }
 
@@ -66,7 +67,7 @@ func (d *PostStore) CreatePost(auth *core.Record, data *model.CreatePostRequest)
 	return post.Record, nil
 }
 
-func (s *PostStore) GetPosts(take, skip int) ([]*core.Record, error) {
+func (s *PostStore) GetPosts(auth *core.Record, take, skip int) ([]*core.Record, error) {
 
 	app := (*s.app)
 
@@ -86,10 +87,14 @@ func (s *PostStore) GetPosts(take, skip int) ([]*core.Record, error) {
 		fmt.Printf("ERRS %+v\n", errs)
 	}
 
+	for _, post := range records {
+		post = s.withCalculatedFields(auth, post)
+	}
+
 	return records, nil
 }
 
-func (s *PostStore) GetPostsForUser(id string, take, skip int) ([]*core.Record, error) {
+func (s *PostStore) GetPostsForUser(auth *core.Record, id string, take, skip int) ([]*core.Record, error) {
 
 	app := (*s.app)
 
@@ -109,7 +114,61 @@ func (s *PostStore) GetPostsForUser(id string, take, skip int) ([]*core.Record, 
 		fmt.Printf("ERRS %+v\n", errs)
 	}
 
+	for _, post := range records {
+		post = s.withCalculatedFields(auth, post)
+	}
+
 	return records, nil
+}
+
+func (s *PostStore) LikePost(auth *core.Record, id string) (*core.Record, error) {
+
+	app := (*s.app)
+
+	r, err := app.FindRecordById(s.TableName(), id)
+	if err != nil {
+		return nil, err
+	}
+
+	post := &db.Post{}
+	post.SetProxyRecord(r)
+
+	post.AddLike(auth.Id)
+
+	if err := app.Save(post); err != nil {
+		return nil, err
+	}
+
+	if err := s.interactionStore.AddLike(auth, post.Record); err != nil {
+		return nil, err
+	}
+
+	return s.withCalculatedFields(auth, post.Record), nil
+}
+
+func (s *PostStore) UnlikePost(auth *core.Record, id string) (*core.Record, error) {
+
+	app := (*s.app)
+
+	r, err := app.FindRecordById(s.TableName(), id)
+	if err != nil {
+		return nil, err
+	}
+
+	post := &db.Post{}
+	post.SetProxyRecord(r)
+
+	post.RemoveLike(auth.Id)
+
+	if err := app.Save(post); err != nil {
+		return nil, err
+	}
+
+	if err := s.interactionStore.AddUnlike(auth, post.Record); err != nil {
+		return nil, err
+	}
+
+	return s.withCalculatedFields(auth, post.Record), nil
 }
 
 func (s *PostStore) expandPosts(relCollection *core.Collection, relIds []string) ([]*core.Record, error) {
@@ -124,4 +183,12 @@ func (s *PostStore) expandPosts(relCollection *core.Collection, relIds []string)
 	}
 
 	return expandFn(relCollection, relIds)
+}
+
+func (s *PostStore) withCalculatedFields(auth, post *core.Record) *core.Record {
+	likes := post.Get(db.Post_Likes).([]string)
+	post.Set(db.Post_LikeCount, len(likes))
+	post.Set(db.Post_IsLiked, slices.Contains(likes, auth.Id))
+
+	return post
 }
