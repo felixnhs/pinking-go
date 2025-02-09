@@ -102,6 +102,12 @@ func (s *PostStore) GetPosts(auth *core.Record, take, skip int) ([]*core.Record,
 	return records, nil
 }
 
+func (s *PostStore) GetPost(id string) (*core.Record, error) {
+	app := (*s.app)
+
+	return app.FindRecordById(s.TableName(), id)
+}
+
 func (s *PostStore) GetPostsForUser(auth *core.Record, id string, take, skip int) ([]*core.Record, error) {
 
 	app := (*s.app)

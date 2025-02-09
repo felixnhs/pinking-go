@@ -7,6 +7,7 @@ type StoreCollection struct {
 	Posts        PostStore
 	Images       ImageStore
 	Interactions InteractionsStore
+	Comments     CommentStore
 }
 
 func BuildAllStores(se *core.ServeEvent) *StoreCollection {
@@ -16,6 +17,7 @@ func BuildAllStores(se *core.ServeEvent) *StoreCollection {
 	BuildPostStore(se, &col)
 	BuildInteractionsStore(se, &col)
 	BuildImageStore(se, &col)
+	BuildCommentStore(se, &col)
 
 	return &col
 }
