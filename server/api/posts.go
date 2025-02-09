@@ -11,13 +11,17 @@ import (
 )
 
 type PostApi struct {
-	store *store.PostStore
+	stores *store.StoreCollection
 }
 
-func BindPostsApi(se *core.ServeEvent, userApi *UserApi) *PostApi {
+func (a *PostApi) Store() *store.PostStore {
+	return a.stores.Posts
+}
+
+func BindPostsApi(se *core.ServeEvent, stores *store.StoreCollection) {
 
 	api := &PostApi{
-		store: store.BuildPostStore(se, userApi.store),
+		stores: stores,
 	}
 
 	// Auth
@@ -26,8 +30,6 @@ func BindPostsApi(se *core.ServeEvent, userApi *UserApi) *PostApi {
 	grp.POST("/new", api.createNewPost)
 	grp.GET("", api.getPaginated)
 	grp.GET("/users/{id}", api.getUsersPostsPaginated)
-
-	return api
 }
 
 func (a *PostApi) createNewPost(e *core.RequestEvent) error {
@@ -38,7 +40,7 @@ func (a *PostApi) createNewPost(e *core.RequestEvent) error {
 		return apis.NewBadRequestError("error_request_body", err)
 	}
 
-	post, err := a.store.CreatePost(e.Auth, &req)
+	post, err := a.Store().CreatePost(e.Auth, &req)
 	if err != nil {
 		return apis.NewInternalServerError("error_create_post", err)
 	}
@@ -56,7 +58,7 @@ func (a *PostApi) getPaginated(e *core.RequestEvent) error {
 	take := getQueryInt64(info, "take", 10)
 	skip := getQueryInt64(info, "skip", 0)
 
-	posts, err := a.store.GetPosts(take, skip)
+	posts, err := a.Store().GetPosts(take, skip)
 	if err != nil {
 		return e.InternalServerError("error_retrieve_posts", err)
 	}
@@ -75,7 +77,7 @@ func (a *PostApi) getUsersPostsPaginated(e *core.RequestEvent) error {
 	take := getQueryInt64(info, "take", 10)
 	skip := getQueryInt64(info, "skip", 0)
 
-	posts, err := a.store.GetPostsForUser(id, take, skip)
+	posts, err := a.Store().GetPostsForUser(id, take, skip)
 	if err != nil {
 		return e.InternalServerError("error_retrieve_posts", err)
 	}

@@ -11,18 +11,18 @@ import (
 )
 
 type PostStore struct {
-	app        *core.App
-	imageStore *ImageStore
-	userStore  *UserStore
+	app              *core.App
+	imageStore       *ImageStore
+	userStore        *UserStore
+	interactionStore *InteractionsStore
 }
 
-func BuildPostStore(se *core.ServeEvent, userStore *UserStore) *PostStore {
+func BuildPostStore(se *core.ServeEvent, userStore *UserStore, inteStore *InteractionsStore, img *ImageStore) *PostStore {
 	return &PostStore{
-		app: &se.App,
-		imageStore: &ImageStore{
-			app: &se.App,
-		},
-		userStore: userStore,
+		app:              &se.App,
+		imageStore:       img,
+		userStore:        userStore,
+		interactionStore: inteStore,
 	}
 }
 
