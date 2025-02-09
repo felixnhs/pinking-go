@@ -39,6 +39,10 @@ func (s *PostStore) users() *UserStore {
 	return &s.collection.Users
 }
 
+func (s *PostStore) comments() *CommentStore {
+	return &s.collection.Comments
+}
+
 func (d *PostStore) CreatePost(auth *core.Record, data *model.CreatePostRequest) (*core.Record, error) {
 
 	app := (*d.app)
@@ -185,6 +189,26 @@ func (s *PostStore) UnlikePost(auth *core.Record, id string) (*core.Record, erro
 	return s.withCalculatedFields(auth, post.Record), nil
 }
 
+func (s *PostStore) AddCommentToPost(auth *core.Record, commentid string, postRec *core.Record) (*core.Record, error) {
+
+	app := (*s.app)
+
+	post := &db.Post{}
+	post.SetProxyRecord(postRec)
+
+	post.AddComment(commentid)
+
+	if err := app.Save(post); err != nil {
+		return nil, err
+	}
+
+	if err := s.interactions().AddComment(auth, post.Record); err != nil {
+		return nil, err
+	}
+
+	return s.withCalculatedFields(auth, post.Record), nil
+}
+
 func (s *PostStore) expandPosts(relCollection *core.Collection, relIds []string) ([]*core.Record, error) {
 
 	var expandFn func(c *core.Collection, ids []string) ([]*core.Record, error) = nil
@@ -203,6 +227,9 @@ func (s *PostStore) withCalculatedFields(auth, post *core.Record) *core.Record {
 	likes := post.Get(db.Post_Likes).([]string)
 	post.Set(db.Post_LikeCount, len(likes))
 	post.Set(db.Post_IsLiked, slices.Contains(likes, auth.Id))
+
+	comments := post.Get(db.Post_Comments).([]string)
+	post.Set(db.Post_CommentCount, len(comments))
 
 	return post
 }

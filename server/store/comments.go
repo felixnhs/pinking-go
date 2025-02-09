@@ -1,9 +1,11 @@
 package store
 
 import (
+	"fmt"
 	"pinking-go/server/api/model"
 	"pinking-go/server/store/db"
 
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -27,6 +29,10 @@ func (s *CommentStore) posts() *PostStore {
 	return &s.collection.Posts
 }
 
+func (s *CommentStore) interactions() *InteractionsStore {
+	return &s.collection.Interactions
+}
+
 func (s *CommentStore) AddToPost(auth *core.Record, mod *model.CreateCommentModel) (*core.Record, error) {
 
 	post, err := s.posts().GetPost(mod.Post)
@@ -34,23 +40,48 @@ func (s *CommentStore) AddToPost(auth *core.Record, mod *model.CreateCommentMode
 		return nil, err
 	}
 
-	return s.createComment(auth, &mod.Text, func(c *db.Comment) {
+	comment, err := s.createComment(auth, &mod.Text, func(c *db.Comment) {
 		c.SetTypeComment()
-		c.SetPost(post.Id)
 	})
-}
 
-func (s *CommentStore) AddReplyToComment(auth *core.Record, mod *model.CreateReplyModel) (*core.Record, error) {
-
-	parent, err := s.GetComment(mod.Comment)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.createComment(auth, &mod.Text, func(c *db.Comment) {
+	_, err = s.posts().AddCommentToPost(auth, comment.Id, post)
+	if err != nil {
+		return nil, err
+	}
+
+	return comment, nil
+}
+
+func (s *CommentStore) AddReplyToComment(auth *core.Record, commentid string, mod *model.CreateCommentModel) (*core.Record, error) {
+
+	post, err := s.posts().GetPost(mod.Post)
+	if err != nil {
+		return nil, err
+	}
+
+	parent, err := s.GetComment(commentid)
+	if err != nil {
+		return nil, err
+	}
+
+	comment, err := s.createComment(auth, &mod.Text, func(c *db.Comment) {
 		c.SetTypeReply()
-		c.SetPost(parent.Id)
 	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.AddCommentToParent(auth, comment.Id, parent, post)
+	if err != nil {
+		return nil, err
+	}
+
+	return comment, nil
 }
 
 func (s *CommentStore) GetComment(id string) (*core.Record, error) {
@@ -59,8 +90,50 @@ func (s *CommentStore) GetComment(id string) (*core.Record, error) {
 	return app.FindRecordById(s.TableName(), id)
 }
 
-func (s *CommentStore) GetThread(auth *core.Record, id string, take, skip int) ([]*core.Record, error) {
-	return nil, nil
+func (s *CommentStore) GetForPostPaginated(id string, take, skip int) ([]*core.Record, error) {
+
+	postRec, err := s.posts().GetPost(id)
+	if err != nil {
+		return nil, err
+	}
+
+	post := &db.Post{}
+	post.SetProxyRecord(postRec)
+
+	return s.getCommentsByIds(post.GetComments(), db.Comment_Type_Comment, take, skip)
+}
+
+func (s *CommentStore) GetThread(id string, take, skip int) ([]*core.Record, error) {
+
+	commentRec, err := s.GetComment(id)
+	if err != nil {
+		return nil, err
+	}
+
+	comment := &db.Comment{}
+	comment.SetProxyRecord(commentRec)
+
+	return s.getCommentsByIds(comment.GetReplies(), db.Comment_Type_Reply, take, skip)
+}
+
+func (s *CommentStore) AddCommentToParent(auth *core.Record, id string, parent, post *core.Record) (*core.Record, error) {
+
+	app := (*s.app)
+
+	parentComment := &db.Comment{}
+	parentComment.SetProxyRecord(parent)
+
+	parentComment.AddReply(id)
+
+	if err := app.Save(parentComment); err != nil {
+		return nil, err
+	}
+
+	if err := s.interactions().AddComment(auth, post); err != nil {
+		return nil, err
+	}
+
+	return parentComment.Record, nil
 }
 
 func (s *CommentStore) createComment(auth *core.Record, text *string, configure func(*db.Comment)) (*core.Record, error) {
@@ -78,7 +151,6 @@ func (s *CommentStore) createComment(auth *core.Record, text *string, configure 
 	comment.SetCreatedBy(auth.Id)
 	comment.SetUpdatedBy(auth.Id)
 	comment.SetText(text)
-	comment.SetEdited(false)
 
 	configure(comment)
 
@@ -87,4 +159,29 @@ func (s *CommentStore) createComment(auth *core.Record, text *string, configure 
 	}
 
 	return comment.Record, nil
+}
+
+func (s *CommentStore) getCommentsByIds(ids []string, t string, take, skip int) ([]*core.Record, error) {
+	app := (*s.app)
+
+	records, err := app.FindRecordsByIds(s.TableName(), ids, func(q *dbx.SelectQuery) error {
+		q.Where(dbx.NewExp(db.Comment_Active+"= {:active}", dbx.Params{"active": true}))
+		q.AndWhere(dbx.NewExp(db.Comment_Type+"= {:type}", dbx.Params{"type": t}))
+		q.OrderBy(db.Comment_Created + " DESC")
+		q.Limit(int64(take))
+		q.Offset(int64(skip))
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	errs := app.ExpandRecords(records, []string{db.Comment_CreatedBy}, s.collection.Users.GetPosters)
+
+	if len(errs) > 0 {
+		return nil, fmt.Errorf("%+v\n", errs)
+	}
+
+	return records, nil
 }

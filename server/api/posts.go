@@ -4,7 +4,6 @@ import (
 	"pinking-go/server/api/model"
 	"pinking-go/server/store"
 	"pinking-go/server/utils"
-	"strconv"
 
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -29,9 +28,9 @@ func BindPostsApi(se *core.ServeEvent, stores *store.StoreCollection) {
 	grp.Bind(apis.RequireAuth(), RequireLockoutMiddleware())
 	grp.POST("/new", api.createNewPost)
 	grp.GET("", api.getPaginated)
-	grp.GET("/users/{id}", api.getUsersPostsPaginated)
 	grp.POST("/{id}/like", api.likePost)
 	grp.POST("/{id}/unlike", api.unlikePost)
+	grp.GET("/{id}/comments", api.getComments)
 }
 
 func (a *PostApi) createNewPost(e *core.RequestEvent) error {
@@ -52,34 +51,12 @@ func (a *PostApi) createNewPost(e *core.RequestEvent) error {
 
 func (a *PostApi) getPaginated(e *core.RequestEvent) error {
 
-	info, err := e.RequestInfo()
+	take, skip, err := utils.GetPaginationHeaders(e)
 	if err != nil {
 		return e.InternalServerError("error_request_info", err)
 	}
-
-	take := getQueryInt64(info, "take", 10)
-	skip := getQueryInt64(info, "skip", 0)
 
 	posts, err := a.Store().GetPosts(e.Auth, take, skip)
-	if err != nil {
-		return e.InternalServerError("error_retrieve_posts", err)
-	}
-
-	return utils.MultipleRecordResponse(e, posts)
-}
-
-func (a *PostApi) getUsersPostsPaginated(e *core.RequestEvent) error {
-	id := e.Request.PathValue("id")
-
-	info, err := e.RequestInfo()
-	if err != nil {
-		return e.InternalServerError("error_request_info", err)
-	}
-
-	take := getQueryInt64(info, "take", 10)
-	skip := getQueryInt64(info, "skip", 0)
-
-	posts, err := a.Store().GetPostsForUser(e.Auth, id, take, skip)
 	if err != nil {
 		return e.InternalServerError("error_retrieve_posts", err)
 	}
@@ -109,30 +86,18 @@ func (a *PostApi) unlikePost(e *core.RequestEvent) error {
 	return utils.RecordResponse(e, post)
 }
 
-func getQueryInt64(info *core.RequestInfo, name string, def int) int {
-	str := info.Query[name]
-	if str == "" {
-		return def
-	}
+func (a *PostApi) getComments(e *core.RequestEvent) error {
+	id := e.Request.PathValue("id")
 
-	val, err := strconv.Atoi(str)
+	take, skip, err := utils.GetPaginationHeaders(e)
 	if err != nil {
-		return def
+		return e.InternalServerError("error_request_info", err)
 	}
 
-	return val
-}
-
-func getQueryBool(info *core.RequestInfo, name string, def bool) bool {
-	str := info.Query[name]
-	if str == "" {
-		return def
-	}
-
-	val, err := strconv.ParseBool(str)
+	comments, err := a.stores.Comments.GetForPostPaginated(id, take, skip)
 	if err != nil {
-		return def
+		return apis.NewInternalServerError("error_get_comments", err)
 	}
 
-	return val
+	return utils.MultipleRecordResponse(e, comments)
 }

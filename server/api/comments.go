@@ -35,15 +35,12 @@ func BindCommentApi(se *core.ServeEvent, stores *store.StoreCollection) {
 func (a *CommentApi) getCommentThread(e *core.RequestEvent) error {
 	id := e.Request.PathValue("id")
 
-	info, err := e.RequestInfo()
+	take, skip, err := utils.GetPaginationHeaders(e)
 	if err != nil {
 		return e.InternalServerError("error_request_info", err)
 	}
 
-	take := getQueryInt64(info, "take", 10)
-	skip := getQueryInt64(info, "skip", 0)
-
-	comments, err := a.Store().GetThread(e.Auth, id, take, skip)
+	comments, err := a.Store().GetThread(id, take, skip)
 	if err != nil {
 		return e.InternalServerError("error_retrieve_comments", err)
 	}
@@ -67,13 +64,15 @@ func (a *CommentApi) createComment(e *core.RequestEvent) error {
 }
 
 func (a *CommentApi) postReply(e *core.RequestEvent) error {
-	req := model.CreateReplyModel{}
+	id := e.Request.PathValue("id")
+
+	req := model.CreateCommentModel{}
 
 	if err := e.BindBody(&req); err != nil {
 		return apis.NewBadRequestError("error_request_body", err)
 	}
 
-	comment, err := a.Store().AddReplyToComment(e.Auth, &req)
+	comment, err := a.Store().AddReplyToComment(e.Auth, id, &req)
 	if err != nil {
 		return apis.NewInternalServerError("error_create_comment", err)
 	}

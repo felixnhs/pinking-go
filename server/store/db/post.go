@@ -20,6 +20,8 @@ const Post_Images = "images"
 const Post_Likes = "likes"
 const Post_LikeCount = "likecount"
 const Post_IsLiked = "liked"
+const Post_Comments = "comments"
+const Post_CommentCount = "commentcount"
 
 func (u *Post) GetDescription() string {
 	return u.GetString(Post_Description)
@@ -65,10 +67,18 @@ func (p *Post) GetLikes() []string {
 	return p.GetStringSlice(Post_Likes)
 }
 
-func (p *Post) AddLike(user string) {
-	p.Set(Post_Likes+"+", user)
+func (p *Post) AddLike(id string) {
+	p.Set(Post_Likes+"+", id)
 }
 
-func (p *Post) RemoveLike(user string) {
-	p.Set(Post_Likes+"-", user)
+func (p *Post) RemoveLike(id string) {
+	p.Set(Post_Likes+"-", id)
+}
+
+func (p *Post) GetComments() []string {
+	return p.Get(Post_Comments).([]string)
+}
+
+func (p *Post) AddComment(id string) {
+	p.Set(Post_Comments+"+", id)
 }

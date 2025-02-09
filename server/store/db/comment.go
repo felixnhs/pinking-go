@@ -10,11 +10,10 @@ type Comment struct {
 
 const Comment_Text = "text"
 const Comment_Active = "active"
+const Comment_Created = "created"
 const Comment_CreatedBy = "createdby"
 const Comment_UpdatedBy = "updatedby"
-const Comment_Post = "post"
-const Comment_ParentComment = "comment"
-const Comment_Edited = "isedited"
+const Comment_Replies = "replies"
 const Comment_Type = "type"
 
 const Comment_Type_Comment = "comment"
@@ -52,30 +51,6 @@ func (p *Comment) SetUpdatedBy(id string) {
 	p.Set(Comment_UpdatedBy, id)
 }
 
-func (p *Comment) GetPost() string {
-	return p.GetString(Comment_Post)
-}
-
-func (p *Comment) SetPost(id string) {
-	p.Set(Comment_Post, id)
-}
-
-func (p *Comment) GetParentComment() string {
-	return p.GetString(Comment_ParentComment)
-}
-
-func (p *Comment) SetParentComment(id string) {
-	p.Set(Comment_ParentComment, id)
-}
-
-func (p *Comment) GetEdited() bool {
-	return p.GetBool(Comment_Edited)
-}
-
-func (p *Comment) SetEdited(edited bool) {
-	p.Set(Comment_Edited, edited)
-}
-
 func (p *Comment) GetType() string {
 	return p.GetString(Comment_Type)
 }
@@ -90,4 +65,12 @@ func (p *Comment) SetTypeComment() {
 
 func (p *Comment) SetTypeReply() {
 	p.SetType(Comment_Type_Reply)
+}
+
+func (p *Comment) AddReply(id string) {
+	p.Set(Comment_Replies+"+", id)
+}
+
+func (p *Comment) GetReplies() []string {
+	return p.Get(Comment_Replies).([]string)
 }
