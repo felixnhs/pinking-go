@@ -10,12 +10,14 @@ import (
 )
 
 type UserStore struct {
-	app *core.App
+	app        *core.App
+	collection *StoreCollection
 }
 
-func BuildUserStore(se *core.ServeEvent) *UserStore {
-	return &UserStore{
-		app: &se.App,
+func BuildUserStore(se *core.ServeEvent, col *StoreCollection) {
+	col.Users = UserStore{
+		app:        &se.App,
+		collection: col,
 	}
 }
 

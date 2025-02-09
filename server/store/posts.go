@@ -12,23 +12,31 @@ import (
 )
 
 type PostStore struct {
-	app              *core.App
-	imageStore       *ImageStore
-	userStore        *UserStore
-	interactionStore *InteractionsStore
+	app        *core.App
+	collection *StoreCollection
 }
 
-func BuildPostStore(se *core.ServeEvent, userStore *UserStore, inteStore *InteractionsStore, img *ImageStore) *PostStore {
-	return &PostStore{
-		app:              &se.App,
-		imageStore:       img,
-		userStore:        userStore,
-		interactionStore: inteStore,
+func BuildPostStore(se *core.ServeEvent, col *StoreCollection) {
+	col.Posts = PostStore{
+		app:        &se.App,
+		collection: col,
 	}
 }
 
 func (d *PostStore) TableName() string {
 	return "posts"
+}
+
+func (s *PostStore) images() *ImageStore {
+	return &s.collection.Images
+}
+
+func (s *PostStore) interactions() *InteractionsStore {
+	return &s.collection.Interactions
+}
+
+func (s *PostStore) users() *UserStore {
+	return &s.collection.Users
 }
 
 func (d *PostStore) CreatePost(auth *core.Record, data *model.CreatePostRequest) (*core.Record, error) {
@@ -50,7 +58,7 @@ func (d *PostStore) CreatePost(auth *core.Record, data *model.CreatePostRequest)
 
 	imageIds := []string{}
 	for _, image := range data.Images {
-		img, err := d.imageStore.CreateImage(auth, &image.Base64, image.Order)
+		img, err := d.images().CreateImage(auth, &image.Base64, image.Order)
 		if err != nil {
 			return nil, err
 		} else {
@@ -139,7 +147,7 @@ func (s *PostStore) LikePost(auth *core.Record, id string) (*core.Record, error)
 		return nil, err
 	}
 
-	if err := s.interactionStore.AddLike(auth, post.Record); err != nil {
+	if err := s.interactions().AddLike(auth, post.Record); err != nil {
 		return nil, err
 	}
 
@@ -164,7 +172,7 @@ func (s *PostStore) UnlikePost(auth *core.Record, id string) (*core.Record, erro
 		return nil, err
 	}
 
-	if err := s.interactionStore.AddUnlike(auth, post.Record); err != nil {
+	if err := s.interactions().AddUnlike(auth, post.Record); err != nil {
 		return nil, err
 	}
 
@@ -174,10 +182,10 @@ func (s *PostStore) UnlikePost(auth *core.Record, id string) (*core.Record, erro
 func (s *PostStore) expandPosts(relCollection *core.Collection, relIds []string) ([]*core.Record, error) {
 
 	var expandFn func(c *core.Collection, ids []string) ([]*core.Record, error) = nil
-	if relCollection.Name == s.imageStore.TableName() {
-		expandFn = s.imageStore.GetImagesForPosts
-	} else if relCollection.Name == s.userStore.TableName() {
-		expandFn = s.userStore.GetPosters
+	if relCollection.Name == s.images().TableName() {
+		expandFn = s.images().GetImagesForPosts
+	} else if relCollection.Name == s.users().TableName() {
+		expandFn = s.users().GetPosters
 	} else {
 		return nil, errors.New("error_expand_function")
 	}

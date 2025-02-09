@@ -9,12 +9,14 @@ import (
 )
 
 type ImageStore struct {
-	app *core.App
+	app        *core.App
+	collection *StoreCollection
 }
 
-func BuildImageStore(se *core.ServeEvent) *ImageStore {
-	return &ImageStore{
-		app: &se.App,
+func BuildImageStore(se *core.ServeEvent, col *StoreCollection) {
+	col.Images = ImageStore{
+		app:        &se.App,
+		collection: col,
 	}
 }
 

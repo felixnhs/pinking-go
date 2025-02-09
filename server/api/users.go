@@ -14,7 +14,7 @@ type UserApi struct {
 }
 
 func (a *UserApi) Store() *store.UserStore {
-	return a.stores.Users
+	return &a.stores.Users
 }
 
 func BindUsersApi(se *core.ServeEvent, stores *store.StoreCollection) {

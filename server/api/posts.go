@@ -15,7 +15,7 @@ type PostApi struct {
 }
 
 func (a *PostApi) Store() *store.PostStore {
-	return a.stores.Posts
+	return &a.stores.Posts
 }
 
 func BindPostsApi(se *core.ServeEvent, stores *store.StoreCollection) {
