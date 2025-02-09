@@ -7,14 +7,14 @@ import (
 )
 
 type InteractionsStore struct {
-	app       *core.App
-	userStore *UserStore
+	app        *core.App
+	collection *StoreCollection
 }
 
-func BuildInteractionsStore(se *core.ServeEvent, userStore *UserStore) *InteractionsStore {
-	return &InteractionsStore{
-		app:       &se.App,
-		userStore: userStore,
+func BuildInteractionsStore(se *core.ServeEvent, col *StoreCollection) {
+	col.Interactions = InteractionsStore{
+		app:        &se.App,
+		collection: col,
 	}
 }
 

@@ -14,7 +14,7 @@ type UserApi struct {
 }
 
 func (a *UserApi) Store() *store.UserStore {
-	return a.stores.Users
+	return &a.stores.Users
 }
 
 func BindUsersApi(se *core.ServeEvent, stores *store.StoreCollection) {
@@ -34,6 +34,7 @@ func BindUsersApi(se *core.ServeEvent, stores *store.StoreCollection) {
 	grp.POST("/resetpassword", api.resetPassword)
 	grp.GET("/me", api.getCurrentUser)
 	grp.GET("/{id}", api.getProfile)
+	grp.GET("/{id}/posts", api.getPosts)
 	grp.PUT("", api.updateUser)
 	grp.PUT("/me/avatar", api.updateAvatar)
 	grp.DELETE("/me/avatar", api.deleteAvatar)
@@ -162,4 +163,20 @@ func (a *UserApi) deleteAvatar(e *core.RequestEvent) error {
 	}
 
 	return utils.RecordResponse(e, e.Auth)
+}
+
+func (a *UserApi) getPosts(e *core.RequestEvent) error {
+	id := e.Request.PathValue("id")
+
+	take, skip, err := utils.GetPaginationHeaders(e)
+	if err != nil {
+		return e.InternalServerError("error_request_info", err)
+	}
+
+	posts, err := a.stores.Posts.GetPostsForUser(e.Auth, id, take, skip)
+	if err != nil {
+		return e.InternalServerError("error_retrieve_posts", err)
+	}
+
+	return utils.MultipleRecordResponse(e, posts)
 }

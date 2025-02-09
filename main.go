@@ -17,6 +17,7 @@ func main() {
 
 		api.BindUsersApi(e, stores)
 		api.BindPostsApi(e, stores)
+		api.BindCommentApi(e, stores)
 
 		return e.Next()
 	})
