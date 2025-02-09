@@ -89,6 +89,29 @@ func (s *PostStore) GetPosts(take, skip int) ([]*core.Record, error) {
 	return records, nil
 }
 
+func (s *PostStore) GetPostsForUser(id string, take, skip int) ([]*core.Record, error) {
+
+	app := (*s.app)
+
+	records, err := app.FindRecordsByFilter(s.TableName(),
+		db.Post_Active+" = {:active} && "+db.Post_CreatedBy+" = {:createdby}",
+		"-"+db.Post_Created,
+		take,
+		skip,
+		dbx.Params{"active": true, "createdby": id})
+
+	if err != nil {
+		return nil, err
+	}
+
+	errs := app.ExpandRecords(records, []string{db.Post_Images}, s.expandPosts)
+	if len(errs) > 0 {
+		fmt.Printf("ERRS %+v\n", errs)
+	}
+
+	return records, nil
+}
+
 func (s *PostStore) expandPosts(relCollection *core.Collection, relIds []string) ([]*core.Record, error) {
 
 	var expandFn func(c *core.Collection, ids []string) ([]*core.Record, error) = nil
