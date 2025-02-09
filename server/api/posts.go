@@ -30,6 +30,8 @@ func BindPostsApi(se *core.ServeEvent, stores *store.StoreCollection) {
 	grp.POST("/new", api.createNewPost)
 	grp.GET("", api.getPaginated)
 	grp.GET("/users/{id}", api.getUsersPostsPaginated)
+	grp.POST("/{id}/like", api.likePost)
+	grp.POST("/{id}/unlike", api.unlikePost)
 }
 
 func (a *PostApi) createNewPost(e *core.RequestEvent) error {
@@ -58,7 +60,7 @@ func (a *PostApi) getPaginated(e *core.RequestEvent) error {
 	take := getQueryInt64(info, "take", 10)
 	skip := getQueryInt64(info, "skip", 0)
 
-	posts, err := a.Store().GetPosts(take, skip)
+	posts, err := a.Store().GetPosts(e.Auth, take, skip)
 	if err != nil {
 		return e.InternalServerError("error_retrieve_posts", err)
 	}
@@ -77,12 +79,34 @@ func (a *PostApi) getUsersPostsPaginated(e *core.RequestEvent) error {
 	take := getQueryInt64(info, "take", 10)
 	skip := getQueryInt64(info, "skip", 0)
 
-	posts, err := a.Store().GetPostsForUser(id, take, skip)
+	posts, err := a.Store().GetPostsForUser(e.Auth, id, take, skip)
 	if err != nil {
 		return e.InternalServerError("error_retrieve_posts", err)
 	}
 
 	return utils.MultipleRecordResponse(e, posts)
+}
+
+func (a *PostApi) likePost(e *core.RequestEvent) error {
+	id := e.Request.PathValue("id")
+
+	post, err := a.Store().LikePost(e.Auth, id)
+	if err != nil {
+		return e.InternalServerError("error_interact_post", err)
+	}
+
+	return utils.RecordResponse(e, post)
+}
+
+func (a *PostApi) unlikePost(e *core.RequestEvent) error {
+	id := e.Request.PathValue("id")
+
+	post, err := a.Store().UnlikePost(e.Auth, id)
+	if err != nil {
+		return e.InternalServerError("error_interact_post", err)
+	}
+
+	return utils.RecordResponse(e, post)
 }
 
 func getQueryInt64(info *core.RequestInfo, name string, def int) int {

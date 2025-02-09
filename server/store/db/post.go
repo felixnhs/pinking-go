@@ -17,6 +17,9 @@ const Post_Created = "created"
 const Post_UpdatedBy = "updatedby"
 const Post_Updated = "updated"
 const Post_Images = "images"
+const Post_Likes = "likes"
+const Post_LikeCount = "likecount"
+const Post_IsLiked = "liked"
 
 func (u *Post) GetDescription() string {
 	return u.GetString(Post_Description)
@@ -56,4 +59,16 @@ func (p *Post) GetImages() []string {
 
 func (p *Post) SetImages(ids *[]string) {
 	p.Set(Post_Images, *ids)
+}
+
+func (p *Post) GetLikes() []string {
+	return p.GetStringSlice(Post_Likes)
+}
+
+func (p *Post) AddLike(user string) {
+	p.Set(Post_Likes+"+", user)
+}
+
+func (p *Post) RemoveLike(user string) {
+	p.Set(Post_Likes+"-", user)
 }
