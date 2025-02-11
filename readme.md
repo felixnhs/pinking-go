@@ -21,7 +21,7 @@ Make sure you have the following installed:
 ### Backend Setup
 1. Clone the repository:
    ```sh
-   git clone https://github.com/zedane/pinking-go.git
+   git clone https://github.com/felixnhs/pinking-go.git
    cd pinking-go
    ```
 2. Install dependencies and start PocketBase:
