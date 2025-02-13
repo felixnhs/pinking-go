@@ -39,10 +39,6 @@ func (s *PostStore) users() *UserStore {
 	return &s.collection.Users
 }
 
-func (s *PostStore) comments() *CommentStore {
-	return &s.collection.Comments
-}
-
 func (d *PostStore) CreatePost(auth *core.Record, data *model.CreatePostRequest) (*core.Record, error) {
 
 	app := (*d.app)
@@ -100,7 +96,7 @@ func (s *PostStore) GetPosts(auth *core.Record, take, skip int) ([]*core.Record,
 	}
 
 	for _, post := range records {
-		post = s.withCalculatedFields(auth, post)
+		s.withCalculatedFields(auth, post)
 	}
 
 	return records, nil
@@ -133,7 +129,7 @@ func (s *PostStore) GetPostsForUser(auth *core.Record, id string, take, skip int
 	}
 
 	for _, post := range records {
-		post = s.withCalculatedFields(auth, post)
+		s.withCalculatedFields(auth, post)
 	}
 
 	return records, nil
