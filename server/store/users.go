@@ -91,7 +91,7 @@ func (d *UserStore) GetById(id string) (*db.User, error) {
 
 func (d *UserStore) ResetPassword(auth *core.Record, oldPassword, newPassword string) (*string, error) {
 
-	if auth.ValidatePassword(oldPassword) == false {
+	if !auth.ValidatePassword(oldPassword) {
 		return nil, errors.New("error_reset_password")
 	}
 
@@ -183,7 +183,7 @@ func (s *UserStore) GetPosters(relCollection *core.Collection, relIds []string) 
 			user.SetAvatarBase64(base64Str)
 		}
 
-		r = user.WithCustomData(true).
+		user.WithCustomData(true).
 			Hide(db.User_Bio)
 	}
 

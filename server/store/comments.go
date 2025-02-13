@@ -180,7 +180,7 @@ func (s *CommentStore) getCommentsByIds(ids []string, t string, take, skip int) 
 	errs := app.ExpandRecords(records, []string{db.Comment_CreatedBy}, s.collection.Users.GetPosters)
 
 	if len(errs) > 0 {
-		return nil, fmt.Errorf("%+v\n", errs)
+		return nil, fmt.Errorf("%+v", errs)
 	}
 
 	return records, nil
