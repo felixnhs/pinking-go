@@ -8,6 +8,7 @@ type StoreCollection struct {
 	Images       ImageStore
 	Interactions InteractionsStore
 	Comments     CommentStore
+	Tags         TagStore
 }
 
 func BuildAllStores(se *core.ServeEvent) *StoreCollection {
@@ -18,6 +19,7 @@ func BuildAllStores(se *core.ServeEvent) *StoreCollection {
 	BuildInteractionsStore(se, &col)
 	BuildImageStore(se, &col)
 	BuildCommentStore(se, &col)
+	BuildTagStore(se, &col)
 
 	return &col
 }
