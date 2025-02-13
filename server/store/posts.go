@@ -62,7 +62,7 @@ func (d *PostStore) CreatePost(auth *core.Record, data *model.CreatePostRequest)
 
 	imageIds := []string{}
 	for _, image := range data.Images {
-		img, err := d.images().CreateImage(auth, &image.Base64, image.Order)
+		img, err := d.images().CreateImage(auth, &image)
 		if err != nil {
 			return nil, err
 		} else {
