@@ -18,6 +18,7 @@ const Image_Created = "created"
 const Image_UpdatedBy = "updatedby"
 const Image_Updated = "updated"
 const Image_Order = "order"
+const Image_Tags = "tags"
 
 func (u *Image) GetRawFileName() string {
 	return u.GetString(Image_Raw)
@@ -57,4 +58,12 @@ func (p *Image) SetUpdatedBy(id string) {
 
 func (p *Image) SetImageRaw(f *filesystem.File) {
 	p.Set(Image_Raw, f)
+}
+
+func (p *Image) GetTags() []string {
+	return p.Get(Image_Tags).([]string)
+}
+
+func (p *Image) SetTags(ids *[]string) {
+	p.Set(Image_Tags, *ids)
 }
