@@ -66,15 +66,15 @@ func (a *UserApi) login(e *core.RequestEvent) error {
 
 	user, err := a.Store().FindByEmail(req.Email)
 	if err != nil {
-		return apis.NewForbiddenError("error_user_login", nil)
+		return apis.NewForbiddenError("error_user_login", err)
 	}
 
-	if user.ValidatePassword(req.Password) == false {
-		return apis.NewForbiddenError("error_user_login", nil)
+	if !user.ValidatePassword(req.Password) {
+		return apis.NewForbiddenError("error_user_login", user.Id)
 	}
 
 	if user.GetLockoutEnabled() {
-		return apis.NewForbiddenError("error_user_lockout", nil)
+		return apis.NewForbiddenError("error_user_lockout", user.Id)
 	}
 
 	return apis.RecordAuthResponse(e, user.Record, "email", nil)
