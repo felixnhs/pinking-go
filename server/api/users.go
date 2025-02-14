@@ -3,6 +3,7 @@ package api
 import (
 	"pinking-go/server/api/model"
 	"pinking-go/server/store"
+	"pinking-go/server/store/db"
 	"pinking-go/server/utils"
 
 	"github.com/pocketbase/pocketbase/apis"
@@ -33,11 +34,15 @@ func BindUsersApi(se *core.ServeEvent, stores *store.StoreCollection) {
 	grp.POST("/logout", api.logout)
 	grp.POST("/resetpassword", api.resetPassword)
 	grp.GET("/me", api.getCurrentUser)
+	grp.GET("/me/followers", api.getCurrentUserFollowers)
+	grp.GET("/me/following", api.getCurrentUserFollowings)
 	grp.GET("/{id}", api.getProfile)
 	grp.GET("/{id}/posts", api.getPosts)
 	grp.PUT("", api.updateUser)
 	grp.PUT("/me/avatar", api.updateAvatar)
 	grp.DELETE("/me/avatar", api.deleteAvatar)
+	grp.POST("/{id}/follow", api.followUser)
+	grp.POST("/{id}/unfollow", api.unfollowUser)
 }
 
 func (a *UserApi) registerNewUser(e *core.RequestEvent) error {
@@ -113,6 +118,8 @@ func (a *UserApi) getCurrentUser(e *core.RequestEvent) error {
 		return apis.NewInternalServerError("error_get_current_auth", err)
 	}
 
+	user.Unhide(db.User_Bio)
+
 	return utils.RecordResponse(e, user.Record)
 }
 
@@ -123,6 +130,8 @@ func (a *UserApi) getProfile(e *core.RequestEvent) error {
 	if err != nil {
 		return apis.NewInternalServerError("error_get_profile", err)
 	}
+
+	user.Unhide(db.User_Bio)
 
 	return utils.RecordResponse(e, user.Record)
 }
@@ -179,4 +188,44 @@ func (a *UserApi) getPosts(e *core.RequestEvent) error {
 	}
 
 	return utils.MultipleRecordResponse(e, posts)
+}
+
+func (a *UserApi) followUser(e *core.RequestEvent) error {
+
+	id := e.Request.PathValue("id")
+
+	if err := a.stores.Users.AddFollow(e.Auth, id); err != nil {
+		return apis.NewInternalServerError("error_follow_user", err)
+	}
+
+	return utils.EmptyResponse(e)
+}
+
+func (a *UserApi) unfollowUser(e *core.RequestEvent) error {
+
+	id := e.Request.PathValue("id")
+
+	if err := a.stores.Users.RemoveFollow(e.Auth, id); err != nil {
+		return apis.NewInternalServerError("error_unfollow_user", err)
+	}
+
+	return utils.EmptyResponse(e)
+}
+
+func (a *UserApi) getCurrentUserFollowers(e *core.RequestEvent) error {
+	records, err := a.stores.Users.GetFollowers(e.Auth)
+	if err != nil {
+		return apis.NewInternalServerError("error_retrieve_followers", err)
+	}
+
+	return utils.MultipleRecordResponse(e, records)
+}
+
+func (a *UserApi) getCurrentUserFollowings(e *core.RequestEvent) error {
+	records, err := a.stores.Users.GetFollowingUsers(e.Auth)
+	if err != nil {
+		return apis.NewInternalServerError("error_retrieve_following", err)
+	}
+
+	return utils.MultipleRecordResponse(e, records)
 }

@@ -14,8 +14,13 @@ type User struct {
 const User_Firstname = "firstname"
 const User_Lastname = "lastname"
 const User_Bio = "bio"
-const User_LockoutEnabled = "bio"
+const User_LockoutEnabled = "lockoutenabled"
 const User_Avatar = "avatar"
+const User_Followers = "followers"
+const User_Following = "following"
+
+const User_Followers_Count = "followercount"
+const User_Following_Count = "followingcount"
 
 func (u *User) GetFirstname() string {
 	return u.GetString(User_Firstname)
@@ -63,4 +68,28 @@ func (p *User) SetAvatarBase64(base64Str *string) {
 
 func (p *User) ClearAvatar() {
 	p.Set(User_Avatar, nil)
+}
+
+func (p *User) GetFollowers() []string {
+	return p.GetStringSlice(User_Followers)
+}
+
+func (p *User) AddFollower(id string) {
+	p.Set(User_Followers+"+", id)
+}
+
+func (p *User) RemoveFollower(id string) {
+	p.Set(User_Followers+"-", id)
+}
+
+func (p *User) GetFollowing() []string {
+	return p.GetStringSlice(User_Following)
+}
+
+func (p *User) AddFollowing(id string) {
+	p.Set(User_Following+"+", id)
+}
+
+func (p *User) RemoveFollowing(id string) {
+	p.Set(User_Following+"-", id)
 }

@@ -86,6 +86,8 @@ func (d *UserStore) GetById(id string) (*db.User, error) {
 		user.Record = user.WithCustomData(true)
 	}
 
+	d.withCalculatedFields(user.Record)
+
 	return user, nil
 }
 
@@ -161,11 +163,95 @@ func (s *UserStore) ClearAvatar(auth *core.Record) error {
 	return nil
 }
 
+func (s *UserStore) GetFollowers(userRec *core.Record) ([]*core.Record, error) {
+
+	user := &db.User{}
+	user.SetProxyRecord(userRec)
+
+	ids := user.GetFollowers()
+
+	return s.getUsersById(ids)
+}
+
+func (s *UserStore) GetFollowingUsers(userRec *core.Record) ([]*core.Record, error) {
+	user := &db.User{}
+	user.SetProxyRecord(userRec)
+
+	ids := user.GetFollowing()
+
+	return s.getUsersById(ids)
+}
+
+func (s *UserStore) AddFollow(auth *core.Record, id string) error {
+
+	app := (*s.app)
+
+	authUser := &db.User{}
+	authUser.SetProxyRecord(auth)
+
+	authUser.AddFollowing(id)
+
+	if err := app.Save(authUser); err != nil {
+		return err
+	}
+
+	user, err := s.GetById(id)
+	if err != nil {
+		return err
+	}
+
+	user.AddFollower(auth.Id)
+
+	if err := app.Save(user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserStore) RemoveFollow(auth *core.Record, id string) error {
+
+	app := (*s.app)
+
+	authUser := &db.User{}
+	authUser.SetProxyRecord(auth)
+
+	authUser.RemoveFollowing(id)
+
+	if err := app.Save(authUser); err != nil {
+		return err
+	}
+
+	user, err := s.GetById(id)
+	if err != nil {
+		return err
+	}
+
+	user.RemoveFollower(auth.Id)
+
+	if err := app.Save(user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *UserStore) GetPosters(relCollection *core.Collection, relIds []string) ([]*core.Record, error) {
+	return s.getUsersById(relIds)
+}
+
+func IsLockoutEnabled(auth *core.Record) bool {
+	user := &db.User{}
+	user.SetProxyRecord(auth)
+
+	return user.GetLockoutEnabled()
+}
+
+func (s *UserStore) getUsersById(ids []string) ([]*core.Record, error) {
 	app := (*s.app)
 
 	var records []*core.Record
-	records, err := app.FindRecordsByIds(s.TableName(), relIds)
+	records, err := app.FindRecordsByIds(s.TableName(), ids)
 
 	if err != nil {
 		return nil, err
@@ -183,16 +269,18 @@ func (s *UserStore) GetPosters(relCollection *core.Collection, relIds []string) 
 			user.SetAvatarBase64(base64Str)
 		}
 
-		user.WithCustomData(true).
-			Hide(db.User_Bio)
+		user.WithCustomData(true)
 	}
 
 	return records, nil
 }
 
-func IsLockoutEnabled(auth *core.Record) bool {
-	user := &db.User{}
-	user.SetProxyRecord(auth)
+func (s *UserStore) withCalculatedFields(user *core.Record) *core.Record {
+	followers := user.Get(db.User_Followers).([]string)
+	user.Set(db.User_Followers_Count, len(followers))
 
-	return user.GetLockoutEnabled()
+	following := user.Get(db.User_Following).([]string)
+	user.Set(db.User_Following_Count, len(following))
+
+	return user
 }
