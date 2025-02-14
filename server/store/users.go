@@ -94,19 +94,19 @@ func (d *UserStore) GetById(id string) (*db.User, error) {
 func (d *UserStore) ResetPassword(auth *core.Record, oldPassword, newPassword string) (*string, error) {
 
 	if !auth.ValidatePassword(oldPassword) {
-		return nil, errors.New("error_reset_password")
+		return nil, errors.New("unauthorized")
 	}
 
 	app := (*d.app)
 
 	auth.SetPassword(newPassword)
 	if err := app.Save(auth); err != nil {
-		return nil, errors.New("error_reset_password")
+		return nil, errors.New("error saving passwird")
 	}
 
 	token, err := auth.NewAuthToken()
 	if err != nil {
-		return nil, errors.New("error_reset_password")
+		return nil, errors.New("error creating token")
 	}
 
 	return &token, nil

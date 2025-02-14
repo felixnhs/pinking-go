@@ -17,7 +17,7 @@ func RequireLockoutMiddleware() *hook.Handler[*core.RequestEvent] {
 
 func lockoutMiddleware(e *core.RequestEvent) error {
 	if store.IsLockoutEnabled(e.Auth) {
-		return e.ForbiddenError("error_lockout_enabled", nil)
+		return e.ForbiddenError("error_lockout_enabled", e.Auth.Id)
 	}
 
 	return e.Next()
