@@ -9,6 +9,10 @@ A simple application where users can upload images and place pin markings on the
 - Backend powered by PocketBase and Go
 - Cross-platform frontend built with Expo
 
+## 🎓 Motivation
+
+This project was created solely for learning and experimenting with Go, PocketBase, and Expo. It does not serve any higher purpose or commercial goal.
+
 ## 🛠 Setup & Installation
 
 ### Prerequisites
@@ -51,7 +55,3 @@ Make sure you have the following installed:
 
 ## 📜 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🎓 Learning Purpose
-
-This project was created solely for learning and experimenting with Go, PocketBase, and Expo. It does not serve any higher purpose or commercial goal.
