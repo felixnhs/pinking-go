@@ -1,4 +1,4 @@
-:root {
+/* :root {
   background-color: #000;
   --color-text: #fff;
 }
@@ -116,4 +116,22 @@ text {
   font-size: 12px;
   margin: 5px;
   color: rgba(255, 255, 255, 0.65);
+} */
+
+
+.swiper-wrapper {
+  flex: 1;
+  width: 100%;
+}
+
+.swiper-container {
+  display: linear;
+  linear-orientation: horizontal;
+  height: 100%;
+}
+
+.swiper-item {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }

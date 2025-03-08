@@ -1,45 +1,20 @@
-import { useCallback, useEffect, useState } from '@lynx-js/react'
-
 import './App.css'
-import arrow from './assets/arrow.png'
-import lynxLogo from './assets/lynx-logo.png'
-import reactLynxLogo from './assets/react-logo.png'
+import { Page } from './components/Page/index.jsx'
+import { picsArr } from './utils/pics.js'
+import { Swiper } from './components/Swiper.jsx'
 
 export function App() {
-  const [alterLogo, setAlterLogo] = useState(false)
 
-  useEffect(() => {
-    console.info('Hello, ReactLynx')
-  }, [])
-
-  const onTap = useCallback(() => {
-    'background only'
-    setAlterLogo(!alterLogo)
-  }, [alterLogo])
+  function easeInOut(x: number) {
+    "main thread"
+    return x < 0.5
+      ? 2 * x * x
+      : 1 - Math.pow(-2 * x + 2, 2) / 2;
+  }
 
   return (
-    <view>
-      <view className='Background' />
-      <view className='App'>
-        <view className='Banner'>
-          <view className='Logo' bindtap={onTap}>
-            {alterLogo
-              ? <image src={reactLynxLogo} className='Logo--react' />
-              : <image src={lynxLogo} className='Logo--lynx' />}
-          </view>
-          <text className='Title'>Pinking App</text>
-          <text className='Subtitle'>on Lynx</text>
-        </view>
-        <view className='Content'>
-          <image src={arrow} className='Arrow' />
-          <text className='Description'>Tap the logo and have fun!</text>
-          <text className='Hint'>
-            Edit<text style={{ fontStyle: 'italic' }}>{' src/App.tsx '}</text>
-            to see updates!
-          </text>
-        </view>
-        <view style={{ flex: 1 }}></view>
-      </view>
-    </view>
+    <Page>
+      <Swiper data={picsArr} main-thread:easing={easeInOut} itemWidth={390} />
+    </Page>
   )
 }
